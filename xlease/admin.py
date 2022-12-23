@@ -2,15 +2,16 @@ from datetime  import timedelta
 from django.contrib import admin
 from django.urls import reverse
 from django.db.models.aggregates import Count
+from django.db.models import F
 from django.utils.html import format_html, urlencode
-from .models import Country, State, City, Customer, Category, Item
+from .models import Country, State, City, Customer, Category, Item, Review
 
 
 admin.site.site_header = "X-lease"
 
 @admin.register(Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'email', 'phone']
+    list_display = ['first_name', 'last_name', 'email', 'phone', 'birth_date']
 
 
 
@@ -57,5 +58,7 @@ class CategoryAmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'price_per_day', 'owned_by', 'leased_to', 'lease_period', 'return_date']
 
-    def return_date(self, item):
-        return item.updated_at - timedelta(item.lease_period)
+    def return_date(self, item:Item):
+        return item.updated_at + timedelta(days=item.lease_period)
+
+admin.site.register(Review)

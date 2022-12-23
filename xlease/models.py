@@ -4,11 +4,12 @@ from django.conf import settings
 
 class Customer(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=13)
+    phone = models.CharField(max_length=13, null=True)
+    birth_date = models.DateField(null=True)
     address = models.TextField(null=True)
-    country = models.ForeignKey('Country', on_delete=models.CASCADE, related_name='+')
-    state = models.ForeignKey('State', on_delete=models.CASCADE, related_name='+')
-    city = models.ForeignKey('City', on_delete=models.CASCADE, related_name='+')
+    country = models.ForeignKey('Country', on_delete=models.CASCADE, null=True, related_name='+')
+    state = models.ForeignKey('State', on_delete=models.CASCADE, null=True, related_name='+')
+    city = models.ForeignKey('City', on_delete=models.CASCADE, null=True, related_name='+')
 
     def first_name(self):
         return self.user.first_name
