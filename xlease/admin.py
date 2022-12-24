@@ -2,7 +2,6 @@ from datetime  import timedelta
 from django.contrib import admin
 from django.urls import reverse
 from django.db.models.aggregates import Count
-from django.db.models import F
 from django.utils.html import format_html, urlencode
 from .models import Country, State, City, Customer, Category, Item, Review
 
@@ -46,7 +45,8 @@ class CategoryAmin(admin.ModelAdmin):
             + urlencode({
                 'category__id': str(category.id)
             }))
-        return format_html('<a href="{}"> {} items</a>', url, category.items_count)
+        plural = 's' if category.items_count > 1 else ''
+        return format_html('<a href="{}"> {} item{}</a>', url, category.items_count, plural)
     
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(
@@ -56,9 +56,26 @@ class CategoryAmin(admin.ModelAdmin):
 
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ['name', 'category', 'price_per_day', 'owned_by', 'leased_to', 'lease_period', 'return_date']
+    list_display = ['name', 'category', 'price_per_day', 'owned_by', 'leased_to', 'lease_period', 'return_date', 'reviews_count']
 
     def return_date(self, item:Item):
         return item.updated_at + timedelta(days=item.lease_period)
+    
+    def reviews_count(self, item):
+        url = (
+            reverse('admin:xlease_review_changelist')
+            + '?'
+            + urlencode({
+                'item__id': str(item.id)
+            }))
+        plural = 's' if item.reviews_count > 1 else ''
+        return format_html('<a href="{}"> {} item{}</a>', url, item.reviews_count, plural)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(
+            reviews_count=Count('reviews')
+        )
 
-admin.site.register(Review)
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ['item_id', 'name', 'text', 'date']

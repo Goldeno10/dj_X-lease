@@ -4,6 +4,7 @@ from django.conf import settings
 
 class Customer(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    profile_image = models.ImageField(upload_to='xlease/customer/images', default='AfricanPear.jpeg')
     phone = models.CharField(max_length=13, null=True)
     birth_date = models.DateField(null=True)
     address = models.TextField(null=True)
@@ -61,6 +62,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
     class Meta:
         verbose_name_plural = 'Categories'
 
@@ -73,6 +75,7 @@ class Item(models.Model):
         (LEASED_OUT, 'Leased Out'),
     ]
     name = models.CharField(max_length=50)
+    slug = models.SlugField(blank=True)
     price_per_day = models.DecimalField(max_digits=6, decimal_places=2)
     quantity = models.IntegerField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='items')
@@ -86,6 +89,10 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+
+class ItemImage(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='xlease/item/images')
 
 class Review(models.Model):
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='reviews')

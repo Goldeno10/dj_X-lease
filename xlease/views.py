@@ -1,7 +1,11 @@
 from rest_framework.decorators import action
 from rest_framework.viewsets import ModelViewSet
-from .models import Country, State, City, Customer, Category, Item, Review
-from .serializers import CountrySerializer, CustomerSerializer, StateSerializer, CitySerializer, CustomerSerializer, CreateCategorySerializer, ItemSerializer, ReviewSerializer
+from .models import Country, State, City, Customer, Category,\
+        Item, Review, ItemImage
+from .serializers import CountrySerializer, CreateCustomerSerializer,\
+        ItemImageSerializer, CustomerSerializer, StateSerializer,\
+        CitySerializer, CustomerSerializer, CreateCategorySerializer,\
+            ItemSerializer, ReviewSerializer
 from rest_framework.response import Response
 
 class CountryViewSet(ModelViewSet):
@@ -23,7 +27,11 @@ class CategoryViewSet(ModelViewSet):
 
 class CustomerViewSet(ModelViewSet):
     queryset = Customer.objects.all()
-    serializer_class = CustomerSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return CustomerSerializer
+        return CreateCustomerSerializer
 
     @action(detail=False, methods=['GET', 'PUT'])
     def me(self, request):
@@ -37,17 +45,25 @@ class CustomerViewSet(ModelViewSet):
             serializer.save()
             return (serializer.data)
 
-
-
-
 class ItemViewSet(ModelViewSet):
     queryset = Item.objects.all()
     serializer_class = ItemSerializer
 
 class ReviewViewSet(ModelViewSet):
     serializer_class = ReviewSerializer
+
     def get_queryset(self):
         return Review.objects.filter(item_id=self.kwargs['items_pk'])
-    
+
     def get_serializer_context(self):
-        return {'item_id': self.kwargs['items_pk'], 'user_id': self.request.user.id}
+        return {'item_id': self.kwargs['item_pk'], 'user_id': self.request.user.id}
+
+
+class ItemImageViewSet(ModelViewSet):
+    serializer_class = ItemImageSerializer
+
+    def get_queryset(self):
+        return ItemImage.objects.filter(item_id=self.kwargs['item_pk'])
+
+    def get_serializer_context(self):
+        return {'item_id': self.kwargs['item_pk']}
